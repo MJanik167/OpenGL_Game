@@ -1,8 +1,59 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#include <fstream>
+#include <sstream>
+// #include <filesystem>
 using namespace std;
+
+struct shaderSource
+{
+    string VertexSource;
+    string FragmentSource;
+};
+
+static shaderSource parseShader(const string &filepath)
+{
+    // std::string path = filepath;
+    // for (const auto &entry : std::filesystem::directory_iterator(path))
+    //     std::cout << entry.path() << std::endl;
+
+    ifstream stream;
+    stream.open(filepath);
+    cout << stream.is_open() << endl;
+
+    enum class ShaderType
+    {
+        NONE = -1,
+        VERTEX = 0,
+        FRAGMENT = 1
+    };
+
+    string line;
+    ShaderType type = ShaderType::NONE;
+    stringstream ss[2];
+    while (getline(stream, line))
+    {
+        cout << 1 << endl;
+        if (line.find("#shader") != string::npos) // jeżeli nie znajdzie nic w danym stringu to zwraca jego koniec dlatego ma nie równać się npos(końcowej pozycji)
+        {
+            if (line.find("vertex") != string::npos)
+            {
+                type = ShaderType::VERTEX;
+            }
+            else
+            {
+                type = ShaderType::FRAGMENT;
+            }
+        }
+        else
+        {
+            ss[(int)type] << line << '\n';
+        }
+    }
+
+    return {ss[(int)ShaderType::VERTEX].str(), ss[(int)ShaderType::FRAGMENT].str()};
+}
 
 static unsigned int compileShader(unsigned int type, const string &source)
 {
@@ -84,28 +135,11 @@ int main(void)
         return -1;
     }
 
-    /*tworzenie shadera*/
-    string vertexShader =
-        "#version 330 core\n"
-        "\n"
-        "layout(location = 0) in vec4 position;\n"
-        "\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = position;\n"
-        "}\n";
+    shaderSource source = parseShader("../resources/shaders/default.shader");
+    cout << "shader source: " << source.VertexSource << endl;
+    cout << source.FragmentSource << endl;
 
-    string fragmentShader =
-        "#version 330 core\n"
-        "\n"
-        "layout(location = 0) out vec4 color;\n"
-        "\n"
-        "void main()\n"
-        "{\n"
-        "   color = vec4(0.9, 0.85, 0.5, 1.0);\n"
-        "}\n";
-
-    unsigned int shader = createShader(vertexShader, fragmentShader);
+    unsigned int shader = createShader(source.VertexSource, source.FragmentSource);
     /*tworzenie buffera*/
     unsigned int buffer;
     glGenBuffers(1, &buffer);
@@ -121,10 +155,20 @@ int main(void)
 
     const int size = 8;
     float positions[size] = {
-        -0.5f, -0.5f,
-        -0.5f, 0.5f,
-        0.5f, -0.5f,
-        0.5f, 0.5f};
+        -0.5f, -0.5f, // 0
+        -0.5f, 0.5f,  // 1
+        0.5f, 0.5f,   // 2
+        0.5f, -0.5f   // 3
+    };
+
+    unsigned int indexes[] = {
+        0, 1, 2,
+        2, 3, 0};
+
+    unsigned int indexBuffer;
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indexes, GL_STATIC_DRAW);
 
     glBufferData(GL_ARRAY_BUFFER, size * sizeof(float), positions, GL_STATIC_DRAW);
 
@@ -138,7 +182,7 @@ int main(void)
     {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         /* Swap front and back buffers*/
         glfwSwapBuffers(window);
@@ -147,6 +191,7 @@ int main(void)
         glfwPollEvents();
     }
 
+    glDeleteProgram(shader);
     glfwTerminate();
     return 0;
 }

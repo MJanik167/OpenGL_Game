@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/include",
                 "${workspaceFolder}/lib",
+                "${workspaceFolder}/resources",
                 "${workspaceFolder}"
             ],
             "defines": [

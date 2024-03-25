@@ -9,7 +9,7 @@
                 "-g",
                 "-std=c++17",
                 "-I${workspaceFolder}/include",
-                "-L{workspaceFolder}/lib",
+                "-L${workspaceFolder}/lib",
                 "${workspaceFolder}/src/glad.c",
                 "${file}",
                 "${workspaceFolder}/glfw3.dll",
