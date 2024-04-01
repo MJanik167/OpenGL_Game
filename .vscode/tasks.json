@@ -11,10 +11,10 @@
                 "-I${workspaceFolder}/include",
                 "-L${workspaceFolder}/lib",
                 "${workspaceFolder}/src/glad.c",
-                "${file}",
+                "${workspaceFolder}/src/*.cpp",
                 "${workspaceFolder}/glfw3.dll",
                 "-o",
-                "${workspaceFolder}/cutable.exe",
+                "${workspaceFolder}/cutable.exe"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

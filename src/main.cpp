@@ -3,8 +3,36 @@
 #include <GLFW/glfw3.h>
 #include <fstream>
 #include <sstream>
+#include <headers/VertexBuffer.h>
+#include <headers/IndexBuffer.h>
+
 // #include <filesystem>
 using namespace std;
+
+#define ASSERT(x) \
+    if (!(x))     \
+        __debugbreak();
+
+#define GLCall(x)    \
+    glClearErrors(); \
+    x;               \
+    ASSERT(glLogCall(#x, __FILE__, __LINE__))
+
+static void glClearErrors()
+{
+    while (glGetError() != GL_NO_ERROR)
+        ;
+}
+
+static bool glLogCall(const char *function, const char *file, int line)
+{
+    while (GLenum error = glGetError())
+    {
+        cout << "[OpenGL Error] (" << error << "):" << function << " " << file << ": " << line << endl;
+        return false;
+    }
+    return true;
+}
 
 struct shaderSource
 {
@@ -20,7 +48,6 @@ static shaderSource parseShader(const string &filepath)
 
     ifstream stream;
     stream.open(filepath);
-    cout << stream.is_open() << endl;
 
     enum class ShaderType
     {
@@ -34,7 +61,6 @@ static shaderSource parseShader(const string &filepath)
     stringstream ss[2];
     while (getline(stream, line))
     {
-        cout << 1 << endl;
         if (line.find("#shader") != string::npos) // jeżeli nie znajdzie nic w danym stringu to zwraca jego koniec dlatego ma nie równać się npos(końcowej pozycji)
         {
             if (line.find("vertex") != string::npos)
@@ -127,7 +153,7 @@ int main(void)
     }
     // wprowadzenie okna do aktualnego contextu
     glfwMakeContextCurrent(window);
-
+    glfwSwapInterval(2);
     // załadowanie gladLoadera i przy okazji error check
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -135,22 +161,16 @@ int main(void)
         return -1;
     }
 
+    /*tworzenie shadera*/
     shaderSource source = parseShader("../resources/shaders/default.shader");
-    cout << "shader source: " << source.VertexSource << endl;
-    cout << source.FragmentSource << endl;
-
     unsigned int shader = createShader(source.VertexSource, source.FragmentSource);
-    /*tworzenie buffera*/
-    unsigned int buffer;
-    glGenBuffers(1, &buffer);
+    glUseProgram(shader);
+
     /*tworzenie vertex array*/
     unsigned int vertexArray;
     glGenVertexArrays(1, &vertexArray);
-
-    /* bindowanie wszystkich stworzonych komponentów (shader,va,buffer)*/
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBindVertexArray(vertexArray);
-    glUseProgram(shader);
+
     /*bind buffer, czyli przypisuje te wartości do następnego buffera który zostanie wygenerowany w oknie, można je nadpisać kolejnym bindem*/
 
     const int size = 8;
@@ -165,25 +185,30 @@ int main(void)
         0, 1, 2,
         2, 3, 0};
 
-    unsigned int indexBuffer;
-    glGenBuffers(1, &indexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indexes, GL_STATIC_DRAW);
-
-    glBufferData(GL_ARRAY_BUFFER, size * sizeof(float), positions, GL_STATIC_DRAW);
-
     /* Bind our Vertex Array Object as the current used object */
+
+    VertexBuffer vb(positions, size * sizeof(float));
+    IndexBuffer ib(indexes, 6);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
+    int location = glGetUniformLocation(shader, "u_color");
+    float red = 0.0f;
+    float inc = 0.05f;
     /*loop until user closes the window*/
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glUniform4f(location, red, 0.5f, 0.3f, 1.0f);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        if (red > 1.0f || red < 0.0f)
+        {
+            inc = -inc;
+        }
 
+        red += inc;
         /* Swap front and back buffers*/
         glfwSwapBuffers(window);
 
