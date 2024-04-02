@@ -1,10 +1,13 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include <fstream>
 #include <sstream>
+
 #include <headers/VertexBuffer.h>
 #include <headers/IndexBuffer.h>
+#include <headers/VertexArray.h>
 
 // #include <filesystem>
 using namespace std;
@@ -167,10 +170,6 @@ int main(void)
     glUseProgram(shader);
 
     /*tworzenie vertex array*/
-    unsigned int vertexArray;
-    glGenVertexArrays(1, &vertexArray);
-    glBindVertexArray(vertexArray);
-
     /*bind buffer, czyli przypisuje te wartości do następnego buffera który zostanie wygenerowany w oknie, można je nadpisać kolejnym bindem*/
 
     const int size = 8;
@@ -187,8 +186,12 @@ int main(void)
 
     /* Bind our Vertex Array Object as the current used object */
 
+    VertexArray va;
     VertexBuffer vb(positions, size * sizeof(float));
     IndexBuffer ib(indexes, 6);
+    VertexBufferLayout layout;
+    layout.push<float>(2);
+    va.addBuffer(vb, layout);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
@@ -202,6 +205,9 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUniform4f(location, red, 0.5f, 0.3f, 1.0f);
+
+        va.bind();
+        ib.bind();
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         if (red > 1.0f || red < 0.0f)
         {

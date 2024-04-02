@@ -7,7 +7,21 @@ struct VertexBufferElement
 {
     unsigned int count;
     unsigned int type;
-    bool normalized;
+    unsigned char normalized;
+
+    static unsigned int getSizeOfType(unsigned int type)
+    {
+        switch (type)
+        {
+        case GL_FLOAT:
+            return 4;
+        case GL_UNSIGNED_INT:
+            return 4;
+        case GL_BYTE:
+            return 1;
+        }
+        return 0;
+    }
 };
 
 class VertexBufferLayout
@@ -17,11 +31,11 @@ private:
     unsigned int m_Stride;
 
 public:
-    VertexBufferLayout() : m_Stride(0) {}
+    VertexBufferLayout();
     ~VertexBufferLayout();
 
     template <typename T>
-    void push(unsigned int count, bool normalized)
+    void push(unsigned int count)
     {
         static_assert(false);
     };
@@ -30,23 +44,23 @@ public:
     inline unsigned int getStride() const { return m_Stride; };
 };
 
-template <>
-void VertexBufferLayout::push<float>(unsigned int count, bool normalized)
-{
-    m_Elements.push_back({GL_FLOAT, count, false});
-    m_Stride += sizeof(GLfloat);
-}
+// template <>
+// void VertexBufferLayout::push<float>(unsigned int count)
+// {
+//     m_Elements.push_back({GL_FLOAT, count, GL_FALSE});
+//     m_Stride += VertexBufferElement::getSizeOfType(GL_FLOAT);
+// }
 
-template <>
-void VertexBufferLayout::push<unsigned int>(unsigned int count, bool normalized)
-{
-    m_Elements.push_back({GL_UNSIGNED_INT, count, false});
-    m_Stride += sizeof(GLuint);
-}
+// template <>
+// void VertexBufferLayout::push<unsigned int>(unsigned int count)
+// {
+//     m_Elements.push_back({GL_UNSIGNED_INT, count, GL_FALSE});
+//     m_Stride += VertexBufferElement::getSizeOfType(GL_UNSIGNED_INT);
+// }
 
-template <>
-void VertexBufferLayout::push<unsigned char>(unsigned int count, bool normalized)
-{
-    m_Elements.push_back({GL_UNSIGNED_BYTE, count, false});
-    m_Stride += sizeof(GLbyte);
-}
+// template <>
+// void VertexBufferLayout::push<unsigned char>(unsigned int count)
+// {
+//     m_Elements.push_back({GL_UNSIGNED_BYTE, count, GL_TRUE});
+//     m_Stride += VertexBufferElement::getSizeOfType(GL_UNSIGNED_BYTE);
+// }
