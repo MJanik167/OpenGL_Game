@@ -66,7 +66,7 @@ public:
     inline unsigned int getStride() const { return m_Stride; };
 
     // TODO:
-    // NAPRAWIC TO GÓWNO
+    // NAPRAWIC TO GÓWNO dsfsdfsdfsdf
 
     void push_float(unsigned int count)
     {
