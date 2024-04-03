@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 #include <glad/glad.h>
 
@@ -34,14 +35,59 @@ public:
     VertexBufferLayout();
     ~VertexBufferLayout();
 
-    template <typename T>
-    void push(unsigned int count)
-    {
-        static_assert(false);
-    };
+    // template <typename T>
+    // void push(unsigned int count)
+    // {
+    //     static_assert(false);
+    // };
+
+    // template <>
+    // void n_push::push<float>(unsigned int count)
+    // {
+    //     m_Elements.push_back({GL_FLOAT, count, GL_FALSE});
+    //     m_Stride += VertexBufferElement::getSizeOfType(GL_FLOAT);
+    // }
+
+    // template <>
+    // void push<unsigned int>(unsigned int count)
+    // {
+    //     m_Elements.push_back({GL_UNSIGNED_INT, count, GL_FALSE});
+    //     m_Stride += VertexBufferElement::getSizeOfType(GL_UNSIGNED_INT);
+    // }
+
+    // template <>
+    // void push<unsigned char>(unsigned int count)
+    // {
+    //     m_Elements.push_back({GL_UNSIGNED_BYTE, count, GL_TRUE});
+    //     m_Stride += VertexBufferElement::getSizeOfType(GL_UNSIGNED_BYTE);
+    // }
 
     inline const std::vector<VertexBufferElement> getElements() const { return m_Elements; };
     inline unsigned int getStride() const { return m_Stride; };
+
+    // TODO:
+    // NAPRAWIC TO GÓWNO
+
+    void push_float(unsigned int count)
+    {
+        m_Elements.push_back({GL_FLOAT, count, GL_FALSE});
+        m_Stride += VertexBufferElement::getSizeOfType(GL_FLOAT) * count;
+    }
+
+    void push_uint(unsigned int count)
+    {
+        m_Elements.push_back({GL_UNSIGNED_INT, count, GL_FALSE});
+        m_Stride += VertexBufferElement::getSizeOfType(GL_UNSIGNED_INT) * count;
+    }
+
+    void push_uchar(unsigned int count)
+    {
+        m_Elements.push_back({GL_UNSIGNED_BYTE, count, GL_TRUE});
+        m_Stride += VertexBufferElement::getSizeOfType(GL_UNSIGNED_BYTE) * count;
+    }
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+    // PLACEHOLDER
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 };
 
 // template <>

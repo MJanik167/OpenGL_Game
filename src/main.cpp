@@ -183,14 +183,13 @@ int main(void)
     unsigned int indexes[] = {
         0, 1, 2,
         2, 3, 0};
-
     /* Bind our Vertex Array Object as the current used object */
 
     VertexArray va;
     VertexBuffer vb(positions, size * sizeof(float));
     IndexBuffer ib(indexes, 6);
     VertexBufferLayout layout;
-    layout.push<float>(2);
+    layout.push_float(2);
     va.addBuffer(vb, layout);
 
     glEnableVertexAttribArray(0);

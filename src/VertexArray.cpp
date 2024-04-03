@@ -13,7 +13,7 @@ VertexArray::~VertexArray()
 void VertexArray::addBuffer(const VertexBuffer &vb, const VertexBufferLayout &layout)
 {
   bind();
-  vb.Bind();
+  vb.bind();
   const auto &elements = layout.getElements();
   for (unsigned int i = 0; i < elements.size(); i++)
   {
