@@ -10,33 +10,12 @@
 #include <headers/IndexBuffer.h>
 #include <headers/VertexArray.h>
 #include <headers/Shader.h>
+#include <headers/Renderer.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "vendor/stb_image/stb_image.h"
+#include <headers/Texture.h>
 
 using namespace std;
-
-#define ASSERT(x) \
-    if (!(x))     \
-        __debugbreak();
-
-#define GLCall(x)    \
-    glClearErrors(); \
-    x;               \
-    ASSERT(glLogCall(#x, __FILE__, __LINE__))
-
-static void glClearErrors()
-{
-    while (glGetError() != GL_NO_ERROR)
-        ;
-}
-
-static bool glLogCall(const char *function, const char *file, int line)
-{
-    while (GLenum error = glGetError())
-    {
-        cout << "[OpenGL Error] (" << error << "):" << function << " " << file << ": " << line << endl;
-        return false;
-    }
-    return true;
-}
 
 int main(void)
 {
@@ -80,45 +59,55 @@ int main(void)
         return -1;
     }
 
-    const int size = 8;
-    float positions[size] = {
-        -0.5f, -0.5f, // 0
-        -0.5f, 0.5f,  // 1
-        0.5f, 0.5f,   // 2
-        0.5f, -0.5f   // 3
+    float positions[] = {
+        -0.5f, -0.5f, 0.0f, 0.0f, // 0
+        0.5f, -0.5f, 1.0f, 0.0f,  // 1
+        0.5f, 0.5f, 1.0f, 1.0f,   // 2
+        -0.5f, 0.5f, 0.0f, 1.0f   // 3
     };
 
     unsigned int indexes[] = {
         0, 1, 2,
-        0, 1, 3,
-        3, 2, 1};
+        2, 3, 0};
 
     VertexArray va;
-    VertexBuffer vb(positions, size * sizeof(float));
-    IndexBuffer ib(indexes, 9);
+    VertexBuffer vb(positions, 4 * 4 * sizeof(float));
+
     VertexBufferLayout layout;
+    layout.push_float(2);
     layout.push_float(2);
     va.addBuffer(vb, layout);
 
+    IndexBuffer ib(indexes, 6);
+
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
     Shader shader("../resources/shaders/default.shader");
-    shader.bind();
 
     float red = 0.0f;
     float inc = 0.05f;
-    shader.setUniform4f("u_color", red, 0.4f, 0.7f, 1.0f);
+
+    Texture texture("2.png");
+    texture.bind();
+    shader.setUniform1i("u_Texture", 0);
+
+    va.unbind();
+    vb.unbind();
+    ib.unbind();
+    shader.unbind();
+
+    Renderer renderer;
+
     /*loop until user closes the window*/
     while (!glfwWindowShouldClose(window))
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        renderer.clear();
 
-        va.bind();
-        ib.bind();
-
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-
+        shader.bind();
         shader.setUniform4f("u_color", red, 0.4f, 0.7f, 1.0f);
+
+        renderer.draw(va, ib, shader);
 
         if (red > 1.0f || red < 0.0f)
         {

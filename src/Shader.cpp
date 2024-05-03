@@ -111,6 +111,15 @@ unsigned int Shader::createShader(const string &vertexShader, const string &frag
   return program;
 }
 
+void Shader::setUniform1i(const std::string &name, int v0)
+{
+  glUniform1i(getUniformLocation(name), v0);
+}
+void Shader::setUniform1f(const std::string &name, float v0)
+{
+  glUniform1f(getUniformLocation(name), v0);
+}
+
 void Shader::setUniform4f(const string &name, float v0, float v1, float v2, float v3)
 {
   glUniform4f(getUniformLocation(name), v0, v1, v2, v3);
@@ -118,8 +127,13 @@ void Shader::setUniform4f(const string &name, float v0, float v1, float v2, floa
 
 int Shader::getUniformLocation(const string &name)
 {
+  if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
+    return m_UniformLocationCache[name];
+
   int location = glGetUniformLocation(m_RendererID, name.c_str());
   if (location == -1)
     std::cout << "WARNING: unfiorm " << name << " doesn't exist" << std::endl;
+
+  m_UniformLocationCache[name] = location;
   return location;
 }
