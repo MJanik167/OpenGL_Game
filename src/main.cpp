@@ -59,6 +59,9 @@ int main(void)
         return -1;
     }
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     float positions[] = {
         -0.5f, -0.5f, 0.0f, 0.0f, // 0
         0.5f, -0.5f, 1.0f, 0.0f,  // 1
@@ -80,15 +83,13 @@ int main(void)
 
     IndexBuffer ib(indexes, 6);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-
     Shader shader("../resources/shaders/default.shader");
+    shader.bind();
 
     float red = 0.0f;
     float inc = 0.05f;
 
-    Texture texture("2.png");
+    Texture texture("../resources/textures/2.png");
     texture.bind();
     shader.setUniform1i("u_Texture", 0);
 
