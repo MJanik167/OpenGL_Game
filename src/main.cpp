@@ -13,6 +13,8 @@
 #include <headers/Renderer.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "vendor/stb_image/stb_image.h"
+#include "vendor/glm/glm.hpp"
+#include "vendor/glm/gtc/matrix_transform.hpp"
 #include <headers/Texture.h>
 
 using namespace std;
@@ -83,8 +85,13 @@ int main(void)
 
     IndexBuffer ib(indexes, 6);
 
+    // to tak jakbym ustawiał sobie granice okna
+    // teraz lewy kraniec będzie na -2.0 prawy na 2.0 itd, ma znaczanie przy określaniu positions
+    glm::mat4 projMatrix = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+
     Shader shader("../resources/shaders/default.shader");
     shader.bind();
+    shader.setUniformMat4f("u_MVP", projMatrix);
 
     float red = 0.0f;
     float inc = 0.05f;

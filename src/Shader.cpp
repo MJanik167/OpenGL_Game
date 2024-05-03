@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <glad/glad.h>
+#include "vendor/glm/glm.hpp"
 
 using namespace std;
 
@@ -124,6 +125,11 @@ void Shader::setUniform4f(const string &name, float v0, float v1, float v2, floa
 {
   glUniform4f(getUniformLocation(name), v0, v1, v2, v3);
 };
+
+void Shader::setUniformMat4f(const std::string &name, const glm::mat4 &matrix)
+{
+  glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
+}
 
 int Shader::getUniformLocation(const string &name)
 {
