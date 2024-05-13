@@ -13,6 +13,7 @@
                 "${workspaceFolder}/src/glad.c",
                 "${workspaceFolder}/src/*.cpp",
                 "${workspaceFolder}/glfw3.dll",
+                "${workspaceFolder}/src/vendor/imGui/*.cpp",
                 "-o",
                 "${workspaceFolder}/cutable.exe"
             ],

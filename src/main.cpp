@@ -17,6 +17,10 @@
 #include "vendor/glm/gtc/matrix_transform.hpp"
 #include <headers/Texture.h>
 
+#include "vendor/imGui/imgui.h"
+#include "vendor/imGui/imgui_impl_glfw.h"
+#include "vendor/imGui/imgui_impl_opengl3.h"
+
 using namespace std;
 
 int main(void)
@@ -44,7 +48,7 @@ int main(void)
 
     // Tworzenie nowego okna
     GLFWwindow *window;
-    window = glfwCreateWindow(640, 480, "Gaming", NULL, NULL);
+    window = glfwCreateWindow(960, 540, "Gaming", NULL, NULL);
     // error check
     if (window == NULL)
     {
@@ -53,7 +57,7 @@ int main(void)
     }
     // wprowadzenie okna do aktualnego contextu
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(2);
+    glfwSwapInterval(1);
     // załadowanie gladLoadera i przy okazji error check
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -65,10 +69,10 @@ int main(void)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     float positions[] = {
-        -0.5f, -0.5f, 0.0f, 0.0f, // 0
-        0.5f, -0.5f, 1.0f, 0.0f,  // 1
-        0.5f, 0.5f, 1.0f, 1.0f,   // 2
-        -0.5f, 0.5f, 0.0f, 1.0f   // 3
+        100.0f, 100.0f, 0.0f, 0.0f, // 0
+        200.0f, 100.0f, 1.0f, 0.0f, // 1
+        200.0f, 200.0f, 1.0f, 1.0f, // 2
+        100.0f, 200.0f, 0.0f, 1.0f  // 3
     };
 
     unsigned int indexes[] = {
@@ -87,14 +91,12 @@ int main(void)
 
     // to tak jakbym ustawiał sobie granice okna
     // teraz lewy kraniec będzie na -2.0 prawy na 2.0 itd, ma znaczanie przy określaniu positions
-    glm::mat4 projMatrix = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+    //  x,x,y,y,z,z
+    glm::mat4 projectionMatrix = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+    glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
 
     Shader shader("../resources/shaders/default.shader");
     shader.bind();
-    shader.setUniformMat4f("u_MVP", projMatrix);
-
-    float red = 0.0f;
-    float inc = 0.05f;
 
     Texture texture("../resources/textures/2.png");
     texture.bind();
@@ -107,28 +109,54 @@ int main(void)
 
     Renderer renderer;
 
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGuiIO &io = ImGui::GetIO();
+    ImGui_ImplOpenGL3_Init("#version 130");
+    ImGui::StyleColorsDark();
+
+    glm::vec3 translation(200, 200, 0);
     /*loop until user closes the window*/
     while (!glfwWindowShouldClose(window))
     {
         renderer.clear();
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), translation);
+        glm::mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
+
         shader.bind();
-        shader.setUniform4f("u_color", red, 0.4f, 0.7f, 1.0f);
+        shader.setUniformMat4f("u_MVP", mvp);
 
         renderer.draw(va, ib, shader);
 
-        if (red > 1.0f || red < 0.0f)
-        {
-            inc = -inc;
-        }
+        ImGui::Begin("Controls");
 
-        red += inc;
+        ImGui::SliderFloat3("Translation", &translation.x, 0.0f, 960.0f);
+
+        ImGui::End();
+
+        ImGui::Begin("PERFORMANCE");
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         /* Swap front and back buffers*/
         glfwSwapBuffers(window);
 
         /*Poll for and process events*/
         glfwPollEvents();
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui::DestroyContext(nullptr); // usun nullptr w najblizszej przyszlosci
 
     glfwTerminate();
     return 0;
